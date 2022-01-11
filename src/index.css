@@ -1,0 +1,61 @@
+*{
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  body{
+    height: 100vh;
+    width: 100%;
+  
+  }
+  .container{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    position: absolute;
+    width: 320px;
+   ;
+    height: 500px;
+    background: white;
+  }
+  h1{
+    text-align: center;
+    padding: 30px;
+    color: white;
+  }
+  #input{
+    height: 100px;
+    font-size: 40px;
+    
+    width: 320px;
+  }
+  #button{
+    width: 80px;
+    height: 80px;
+    font-size: 20px;
+    font-weight: 400;
+    background: rgb(37, 37, 37);
+    color: white;
+    outline: none;
+    border: none;
+  }
+  #cal{
+    width: 320px;
+    height: 80px;
+    font-size: 20px;
+    font-weight: 400;
+    background: chocolate;
+    border: none;
+    outline: none;
+    color: white;
+  }
+  .new{
+    background: chocolate;
+  }
+  #input{
+    background: rgb(210, 105, 30,0.5);
+    outline: none;
+    border: none;
+    color: white;
+  }
