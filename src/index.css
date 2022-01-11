@@ -1,61 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;700&display=swap');
 *{
     padding: 0px;
     margin: 0px;
     box-sizing: border-box;
-    overflow: hidden;
-  }
-  body{
+}
+body{
     height: 100vh;
     width: 100%;
-  
-  }
-  .container{
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    position: absolute;
-    width: 320px;
-   ;
-    height: 500px;
     background: white;
-  }
-  h1{
+    font-family: 'Lato', sans-serif;
+}
+.show{
+    padding: 20px;
+    margin: 20px;
     text-align: center;
-    padding: 30px;
-    color: white;
-  }
-  #input{
-    height: 100px;
+
+}
+.title{
     font-size: 40px;
+    font-weight: 700;
+    margin: 20px 0;
+ 
+}
+.title:hover{
+    transform: translateY(-10px);
+    transition: 0.1s;
+    font-size: 45px;
+}
+
+.img{
+    margin: 10px 0;
+    padding: 10px 0;
     
-    width: 320px;
-  }
-  #button{
-    width: 80px;
-    height: 80px;
-    font-size: 20px;
-    font-weight: 400;
-    background: rgb(37, 37, 37);
+}
+.img img{
+    height: 500px;
+    width: 950px;
+    border-radius: 5px;
+    padding: 30px;
+    border: 3px solid black;
+}
+
+.description{
+    font-size: 30px;
+    font-weight: 200;
+    margin: 10px 0;
+    padding: 20px 0;
+}
+.url a{
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: 200;
+  
+    color: black;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 2px solid black;
+}
+.url a:hover{
+    background: black;
+
     color: white;
-    outline: none;
-    border: none;
-  }
-  #cal{
-    width: 320px;
-    height: 80px;
-    font-size: 20px;
-    font-weight: 400;
-    background: chocolate;
-    border: none;
-    outline: none;
-    color: white;
-  }
-  .new{
-    background: chocolate;
-  }
-  #input{
-    background: rgb(210, 105, 30,0.5);
-    outline: none;
-    border: none;
-    color: white;
-  }
+}
+.box{
+    margin-bottom: 140px;
+}
+.heading p{
+    font-size: 80px;
+    font-weight: 700;
+    margin: 20px 0 50px 0;
+}
+.heading h1{
+    color: rgb(66, 64, 64);
+    margin: 10px 0 50px 0;
+}
