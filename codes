@@ -1,0 +1,371 @@
+Linear Block code
+clc;
+clear all;
+close all;
+g=[1 1 0 1 0 0 0;0 1 1 0 1 0 0;1 1 1 0 0 1 0;1 0 1 0 0 0 1];
+disp(g);
+disp('The order of linear block code for given generator matrix is ');
+[n,k]=size(transpose(g));
+disp('The cord word length is');
+disp(n);
+disp('The size of message bits are');
+disp(k);
+for i=1:2^k
+    for j=k:-1:1
+        if rem(i-1,2^(-j+k+1))>=2^(-j+k)
+            m(i,j)=1;
+        else
+            m(i,j)=0;
+        end
+    end
+end
+disp('The possible message bits are');
+ 
+disp('c0 c1 c2 c3');
+disp (m);
+disp('The possible codewords are ');
+disp('b0 b1 b2 c0 c1 c2 c3 Hamming weight');%%
+c=rem(m*g,2);
+d_min=sum((c(1:2^k,:))');
+d_min2=d_min';
+s=[c d_min2];
+disp(s);
+disp('The minimum hamming weightfor the given block code is=');
+d_min1=min(sum((c(2:2^k,:))'));
+disp(d_min1);
+       
+%%DECODING PART
+n=input('Enter the Size of codeword N=');
+k=input('Enter the K='); 
+ 
+P=zeros(k,(n-k));
+ 
+P=input('Enter the Parity Matrix having size of p=');
+d=input('Enter the message ')
+I=eye(k);
+% generator matrix
+G=[I P];
+C=d*G;
+for i=1:n
+ if (rem(C(i),2)==0)
+ C(i)=0;
+ else
+ C(i)=1;
+ end
+end
+%starting for the decoder
+p=P';
+ 
+I=eye(n-k);
+H=[p I];
+ 
+H1=H';
+disp('The H matrix is');
+disp(H1);
+R=input('Enter the Received Code Word');
+disp(R);
+ 
+ 
+%for syndrome
+ S=rem(R*H1,2);
+disp('Syndrom of a Given codeword is');
+disp(S);
+ 
+for i=1:size(H1)
+ if(H1(i,1:3)==S)
+ R(i)=1-R(i);
+ break;
+ end
+end
+disp('The Error is in bit:');
+disp(i);
+disp('correct receive code is given by');
+disp(R);
+
+
+///////////////////////////////////////////////////////////////////////////
+Huffman
+
+% Huffman coding
+% finding codes and compression ratio
+close all;
+clear all;
+
+P_x = [0.05 0.2 0.15 0.4 0.1 0.1];
+x = {1; 2; 3; 4; 5; 6};
+no_sym = length(x);
+y = x;
+p_y = P_x;
+
+% Create a cell array for codes
+codes = cell(1, no_sym);
+
+% Arrange in descending order
+for i = 2:no_sym
+    for j = i:-1:2
+        if p_y(j) < p_y(j - 1)
+            break;
+        else
+            temp = p_y(j - 1);
+            p_y(j - 1) = p_y(j);
+            p_y(j) = temp;
+            temp2 = y(j - 1);
+            y(j - 1) = y(j);
+            y(j) = temp2;
+        end
+    end
+end
+
+la = length(y);
+i = 1;
+while la >= 2
+    for j = 1:length(y{la})
+        index = y{la}(j);
+        codes{index} = [1, codes{index}];
+    end
+    for j = 1:length(y{la - 1})
+        index = y{la - 1}(j);
+        codes{index} = [0, codes{index}];
+    end
+    p_y(la - 1) = p_y(la) + p_y(la - 1);
+    p_y = p_y(1:la - 1);
+    y{la - 1} = [y{la - 1}, y{la}];
+    y = y(1:la - 1);
+    for j = la - 1:-1:2
+        if p_y(j) < p_y(j - 1)
+            break;
+        else
+            temp = p_y(j);
+            p_y(j) = p_y(j - 1);
+            p_y(j - 1) = temp;
+            temp2 = y(j);
+            y(j) = y(j - 1);
+            y(j - 1) = temp2;
+        end
+    end
+    la = length(y);
+end
+% Display Huffman codes
+for i = 1:no_sym
+    fprintf('Symbol %d Huffman code: ', i);
+    disp(codes{i});
+end
+
+% Calculate and display the compression ratio
+bit_count_original = no_sym * 8;  % Assuming 8 bits per symbol
+bit_count_compressed = 0;
+for i = 1:no_sym
+    bit_count_compressed = bit_count_compressed + length(codes{i});
+end
+
+compression_ratio = bit_count_original / bit_count_compressed;
+
+fprintf('Compression ratio: %.2f\n', compression_ratio);
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+QPSK modulation
+clc;
+clear all;
+close all;
+%GENERATE QUADRATURE CARRIER SIGNAL
+Tb=1;t=0:(Tb/100):Tb;fc=1;
+c1=sqrt(2/Tb)*cos(2*pi*fc*t);
+c2=sqrt(2/Tb)*sin(2*pi*fc*t);
+%generate message signal
+N=8;m=rand(1,N);
+t1=0;t2=Tb
+for i=1:2:(N-1)
+ t=[t1:(Tb/100):t2]
+ if m(i)>0.5
+ m(i)=1;
+ m_s=ones(1,length(t));
+ else
+ m(i)=0;
+ m_s=-1*ones(1,length(t));
+ end
+ %odd bits modulated signal
+ odd_sig(i,:)=c1.*m_s;
+ if m(i+1)>0.5 
+      m(i+1)=1;
+ m_s=ones(1,length(t));
+ else
+ m(i+1)=0;
+ m_s=-1*ones(1,length(t));
+ end
+ %even bits modulated signal
+ even_sig(i,:)=c2.*m_s;
+ %qpsk signal
+ qpsk=odd_sig+even_sig;
+ %Plot the QPSK modulated signal
+ subplot(3,2,4);plot(t,qpsk(i,:));
+ title('QPSK signal');xlabel('t---->');ylabel('s(t)');grid on; hold on;
+ t1=t1+(Tb+.01); t2=t2+(Tb+.01);
+ end
+hold off
+%Plot the binary data bits and carrier signal
+subplot(3,2,1);stem(m);
+title('binary data bits');xlabel('n---->');ylabel('b(n)');grid on;
+subplot(3,2,2);plot(t,c1);
+title('carrier signal-1');xlabel('t---->');ylabel('c1(t)');grid on;
+subplot(3,2,3);plot(t,c2);
+title('carrier signal-2');xlabel('t---->');ylabel('c2(t)');grid on; 
+
+
+
+QPSK Demodulation
+t1=0;t2=Tb;
+ for i=1:N-1
+ t=[t1:(Tb/100):t2];
+ %correlator
+ x1=sum(c1.*qpsk(i,:));
+ x2=sum(c2.*qpsk(i,:));
+ %decision device
+ if (x1>0&&x2>0)
+ demod(i)=1;
+ demod(i+1)=1;
+ elseif (x1>0&&x2<0)
+ demod(i)=1;
+ demod(i+1)=0;
+ elseif (x1<0&&x2<0)
+ demod(i)=0;
+ demod(i+1)=0;
+ elseif (x1<0&&x2>0)
+ demod(i)=0;
+ demod(i+1)=1;
+ end
+ t1=t1+(Tb+.01); t2=t2+(Tb+.01);
+ end
+ subplot(3,2,5);stem(demod);
+ title('qpsk demodulated bits');xlabel('n---->');ylabel('b(n)');grid on;
+
+QPSK BER
+clc;
+
+clear all;
+close all;
+N = 2 * 10^5;
+Eb_N0_dB = 2 : 20;
+sy_hat = zeros(1, N);
+nerr = zeros(1, N);
+%Signal Transmission and Detection
+for i=1:length(Eb_N0_dB)
+si = (2 * (rand(1, N) > 0.5) - 1); %In-Phase Symbol Generation ||
+rand(1, N) > 0.5 -> Gives logical Array of 0s and 1s
+sq = (2 * (rand(1, N) > 0.5) - 1); %Quadrature Symbol Generation
+
+sy = si + 1i*sq; %Adding the two Symbols
+
+s = (1 / sqrt(2)) * sy;
+n = 1 / sqrt(2) * (randn(1, N) + 1i*randn(1, N)); %Random Noise Generation
+
+y = 10 ^ (Eb_N0_dB(i) / 20) * s + n; %Received Signal
+si_ = real(y);
+sq_ = imag(y);
+
+sy_hat(si_ < 0 & sq_ < 0) = -1 + -1 * 1i;
+sy_hat(si_ >= 0 & sq_ > 0) = 1 + 1 * 1i;
+sy_hat(si_ < 0 & sq_ >= 0) = -1 + 1 * 1i;
+sy_hat(si_ >= 0 & sq_ < 0) = 1 + -1 * 1i;
+
+%BER Calculation
+nerr(i) = size(find((sy - sy_hat)), 2); %No. of Errors
+end
+simu = nerr / N;
+theory = erfc(sqrt(0.5 * (10 .^ (Eb_N0_dB/10)))) - (1/4) * (erfc(sqrt(0.5 *
+(10 .^ (Eb_N0_dB) / 10)))) .^ 2;
+semilogy(Eb_N0_dB, theory, 'b-');
+hold on;
+semilogy(Eb_N0_dB, simu(2:20), 'k+');
+axis([2 14 10^-5 1])
+grid on
+legend('Theory QPSK', 'Simulated QPSK');
+xlabel('SNR(dB)');
+ylabel('BER');
+title('BER for QPSK modulation in AWGN');
+
+
+/////////////////////////////////////////////////////////////////////////////
+Shannon Fano
+clc;
+clear all;
+close all;
+n = input('Number of Symbols:');
+p = zeros(1, n);
+for i=1:n
+fprintf('Give the probability for %dth symbol:', i);
+p(i) = input('');
+end
+[p, I] = sort(p, 'descend');
+codes = getCodes(p, 1);
+Lk_pk = zeros(1, n);
+for i=1:length(codes)
+fprintf('\nCode for %dth Symbol: ', I(i));
+
+fprintf('%g ', codes{i});
+fprintf('\n');
+Lk_pk(i) = length(codes{i}) * p(i);
+end
+avg_L = sum(Lk_pk);
+Entropy = 0;
+for i=1:n
+Entropy = Entropy + (-1 * p(i) * log2(p(i)));
+end
+fprintf('\nEntropy: %f\n', Entropy);
+efficiency = (Entropy / avg_L) * 100;
+fprintf('\nEfficiency: %f\n', efficiency);
+function codes=getCodes(p, tp)
+if (length(p) == 1 || length(p) == 2)
+if (length(p) == 2)
+codes = {[0]; [1]};
+else
+codes = {[]};
+end
+else
+sum = 0;
+prevSum = 0;
+codes = cell(length(p), 1);
+index = -1;
+mid = tp/2;
+first = 1;
+for i=1:length(p)
+prevSum = sum;
+
+sum = sum + p(i);
+if (sum <= tp / 2)
+codes{i} = [0];
+else
+if (abs(tp/2 - sum) <= abs(tp/2 - prevSum))
+codes{i} = [0];
+else
+if (first)
+index = i;
+first = 0;
+mid = prevSum;
+end
+codes{i} = [1];
+end
+end
+end
+
+%Recursively Getting the codes
+codesUp = getCodes(p(1:index - 1), mid);
+codesDown = getCodes(p(index:length(p)), tp - mid);
+
+%Concatenating
+i = 1;
+j = 1;
+while(j <= length(codesUp))
+codes{i} = [codes{i}, codesUp{j}];
+i = i + 1;
+j = j + 1;
+
+end
+j = 1;
+while (j <= length(codesDown))
+codes{i} = [codes{i}, codesDown{j}];
+i = i + 1;
+j = j + 1;
+end
+end
+end
