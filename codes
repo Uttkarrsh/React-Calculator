@@ -1,371 +1,554 @@
-Linear Block code
+################################
+DTFT
 clc;
-clear all;
 close all;
-g=[1 1 0 1 0 0 0;0 1 1 0 1 0 0;1 1 1 0 0 1 0;1 0 1 0 0 0 1];
-disp(g);
-disp('The order of linear block code for given generator matrix is ');
-[n,k]=size(transpose(g));
-disp('The cord word length is');
-disp(n);
-disp('The size of message bits are');
-disp(k);
-for i=1:2^k
-    for j=k:-1:1
-        if rem(i-1,2^(-j+k+1))>=2^(-j+k)
-            m(i,j)=1;
-        else
-            m(i,j)=0;
-        end
-    end
-end
-disp('The possible message bits are');
- 
-disp('c0 c1 c2 c3');
-disp (m);
-disp('The possible codewords are ');
-disp('b0 b1 b2 c0 c1 c2 c3 Hamming weight');%%
-c=rem(m*g,2);
-d_min=sum((c(1:2^k,:))');
-d_min2=d_min';
-s=[c d_min2];
-disp(s);
-disp('The minimum hamming weightfor the given block code is=');
-d_min1=min(sum((c(2:2^k,:))'));
-disp(d_min1);
-       
-%%DECODING PART
-n=input('Enter the Size of codeword N=');
-k=input('Enter the K='); 
- 
-P=zeros(k,(n-k));
- 
-P=input('Enter the Parity Matrix having size of p=');
-d=input('Enter the message ')
-I=eye(k);
-% generator matrix
-G=[I P];
-C=d*G;
-for i=1:n
- if (rem(C(i),2)==0)
- C(i)=0;
- else
- C(i)=1;
- end
-end
-%starting for the decoder
-p=P';
- 
-I=eye(n-k);
-H=[p I];
- 
-H1=H';
-disp('The H matrix is');
-disp(H1);
-R=input('Enter the Received Code Word');
-disp(R);
- 
- 
-%for syndrome
- S=rem(R*H1,2);
-disp('Syndrom of a Given codeword is');
-disp(S);
- 
-for i=1:size(H1)
- if(H1(i,1:3)==S)
- R(i)=1-R(i);
- break;
- end
-end
-disp('The Error is in bit:');
-disp(i);
-disp('correct receive code is given by');
-disp(R);
+
+ % 1
+ x=[1]; %Numerator of Transfer Function
+ y=[1,-0.9]; %Denominator of Transfer Function
+ subplot(3,1,1)
+ zplane(x,y); %Pole-Zero Plot
+
+% 2
+
+x=[1]; %Numerator of Transfer Function
+y=[1,-0.9]; %Denominator of Transfer Function
+w=linspace(-2*pi,2*pi);
+H=freqz(x,y,w);
+magH=abs(H);
+angH=angle(H);
+subplot(3,1,2);
+plot(w/pi,magH);
+xlabel('Frequency in pi');
+ylabel('Magnitude');
+title('Magnitude Response');
+subplot(3,1,3);
+plot(w/pi,angH);
+xlabel('Frequency in Pi');
+ylabel('Phase in Pi radians');
+title('Phase Response');
 
 
-///////////////////////////////////////////////////////////////////////////
-Huffman
+% 3
+x=[1]; %Numerator of Transfer Function
+y=[1,-0.9]; %Denominator of Transfer Function
+n=[0:150];
+z=cos(0.05*pi*n);
+a=filter(x,y,z);
+figure,subplot(2,1,1);
+stem(n,z);
+xlabel('n');
+ylabel('x[n]');
+title('Input Signal');
+subplot(2,1,2);
+stem(n,a);
+xlabel('n');
+ylabel('y[n]');
+title('Output Signal');xlabel('n');
 
-% Huffman coding
-% finding codes and compression ratio
-close all;
-clear all;
-
-P_x = [0.05 0.2 0.15 0.4 0.1 0.1];
-x = {1; 2; 3; 4; 5; 6};
-no_sym = length(x);
-y = x;
-p_y = P_x;
-
-% Create a cell array for codes
-codes = cell(1, no_sym);
-
-% Arrange in descending order
-for i = 2:no_sym
-    for j = i:-1:2
-        if p_y(j) < p_y(j - 1)
-            break;
-        else
-            temp = p_y(j - 1);
-            p_y(j - 1) = p_y(j);
-            p_y(j) = temp;
-            temp2 = y(j - 1);
-            y(j - 1) = y(j);
-            y(j) = temp2;
-        end
-    end
-end
-
-la = length(y);
-i = 1;
-while la >= 2
-    for j = 1:length(y{la})
-        index = y{la}(j);
-        codes{index} = [1, codes{index}];
-    end
-    for j = 1:length(y{la - 1})
-        index = y{la - 1}(j);
-        codes{index} = [0, codes{index}];
-    end
-    p_y(la - 1) = p_y(la) + p_y(la - 1);
-    p_y = p_y(1:la - 1);
-    y{la - 1} = [y{la - 1}, y{la}];
-    y = y(1:la - 1);
-    for j = la - 1:-1:2
-        if p_y(j) < p_y(j - 1)
-            break;
-        else
-            temp = p_y(j);
-            p_y(j) = p_y(j - 1);
-            p_y(j - 1) = temp;
-            temp2 = y(j);
-            y(j) = y(j - 1);
-            y(j - 1) = temp2;
-        end
-    end
-    la = length(y);
-end
-% Display Huffman codes
-for i = 1:no_sym
-    fprintf('Symbol %d Huffman code: ', i);
-    disp(codes{i});
-end
-
-% Calculate and display the compression ratio
-bit_count_original = no_sym * 8;  % Assuming 8 bits per symbol
-bit_count_compressed = 0;
-for i = 1:no_sym
-    bit_count_compressed = bit_count_compressed + length(codes{i});
-end
-
-compression_ratio = bit_count_original / bit_count_compressed;
-
-fprintf('Compression ratio: %.2f\n', compression_ratio);
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
-QPSK modulation
+#################################################################
+4 point DTFT
 clc;
-clear all;
 close all;
-%GENERATE QUADRATURE CARRIER SIGNAL
-Tb=1;t=0:(Tb/100):Tb;fc=1;
-c1=sqrt(2/Tb)*cos(2*pi*fc*t);
-c2=sqrt(2/Tb)*sin(2*pi*fc*t);
-%generate message signal
-N=8;m=rand(1,N);
-t1=0;t2=Tb
-for i=1:2:(N-1)
- t=[t1:(Tb/100):t2]
- if m(i)>0.5
- m(i)=1;
- m_s=ones(1,length(t));
- else
- m(i)=0;
- m_s=-1*ones(1,length(t));
- end
- %odd bits modulated signal
- odd_sig(i,:)=c1.*m_s;
- if m(i+1)>0.5 
-      m(i+1)=1;
- m_s=ones(1,length(t));
- else
- m(i+1)=0;
- m_s=-1*ones(1,length(t));
- end
- %even bits modulated signal
- even_sig(i,:)=c2.*m_s;
- %qpsk signal
- qpsk=odd_sig+even_sig;
- %Plot the QPSK modulated signal
- subplot(3,2,4);plot(t,qpsk(i,:));
- title('QPSK signal');xlabel('t---->');ylabel('s(t)');grid on; hold on;
- t1=t1+(Tb+.01); t2=t2+(Tb+.01);
- end
-hold off
-%Plot the binary data bits and carrier signal
-subplot(3,2,1);stem(m);
-title('binary data bits');xlabel('n---->');ylabel('b(n)');grid on;
-subplot(3,2,2);plot(t,c1);
-title('carrier signal-1');xlabel('t---->');ylabel('c1(t)');grid on;
-subplot(3,2,3);plot(t,c2);
-title('carrier signal-2');xlabel('t---->');ylabel('c2(t)');grid on; 
+
+%DTFT
+w=0:0.01:2*pi;
+Xw=1+exp(-j*w)+exp(-j*2*w)+exp(-j*3*w);
+%4-point DTFT
+xn=ones(1,4);
+N=4;
+n=0:N-1;
+k=0:N-1;
+WN=exp(-j*2*pi/N*n'*k);
+Xk=xn*WN;
+subplot(221);
+plot(w,abs(Xw));
+xlabel('Frequency');
+ylabel('Magnitude');
+title('DTFT');
+subplot(222);
+plot(w,abs(Xw));hold on
+stem(2*pi*k/N,abs(Xk),'filled');
+xlabel('2*pi*k/4');
+ylabel('Magnitude');
+title('4-point DTFT');
+%8-point DTFT
+clear N;
+xn=[ones(1,4) zeros(1,4)];
+N=8;
+n=0:N-1;
+k=0:N-1;
+WN=exp(-j*2*pi/N*n'*k);
+Xk=xn*WN;
+subplot(223);
+plot(w,abs(Xw));hold on
+stem(2*pi*k/N,abs(Xk),'filled');
+xlabel('2*pi*k/8');
+ylabel('Magnitude');
+title('8-point DTFT');
+%16-point DTFT
+clear N;
+xn=[ones(1,4) zeros(1,12)];
+N=16;
+n=0:N-1;
+k=0:N-1;
+WN=exp(-j*2*pi/N*n'*k);
+Xk=xn*WN;
+subplot(224);
+plot(w,abs(Xw));hold on
+stem(2*pi*k/N,abs(Xk),'filled');
+xlabel('2*pi*k/16');
+ylabel('Magnitude');
+title('16-point DTFT');
+
+
+##############################################################
+Circular Convolution
+(i)  clc;
+close all;
+
+N=4;
+x1=[1 2 2 1];
+x2=[1 -1 -1 1];
+y=zeros(1,N);
+%circular convolution
+for n=0:N-1
+ m=0:N-1;
+ n1=mod(n-m,N);
+ xs2=x2(n1+1);
+ x12=x1.*xs2;
+ y(n+1)=sum(x12);
+end
+n=0:N-1;
+subplot(131);
+stem(n,x1,'filled');
+xlabel('n');
+title('x1(n)');
+subplot(132);
+stem(n,x2,'filled');
+xlabel('n');
+title('x2(n)');
+subplot(133);
+stem(n,y,'filled');
+xlabel('n');
+title('y(n)'); 
+
+
+(ii) clc;
+close all;
+
+N=4;
+x1=[1 2 2 1];
+Nx1=length(x1);
+x2=[1 -1 -1 1];
+Nx2=length(x2);
+Ny=Nx1+Nx2-1;
+x1z=[x1 zeros(1,Ny-Nx1)];
+x2z=[x2 zeros(1,Ny-Nx2)];
+y=zeros(1,Ny);
+%circular convolution
+for n=0:Ny-1
+ m=0:Ny-1;
+ n1=mod(n-m,Ny);
+ x2s=x2z(n1+1);
+ x12=x1z.*x2s;
+ y(n+1)=sum(x12);
+end
+n=0:Ny-1;
+subplot(131);
+stem(n,x1z,'filled');
+xlabel('n');
+title('x1(n)');
+subplot(132);
+stem(n,x2z,'filled');
+xlabel('n');
+title('x2(n)');
+subplot(133);
+stem(n,y,'filled');
+xlabel('n');
+title('y(n)');
 
 
 
-QPSK Demodulation
-t1=0;t2=Tb;
- for i=1:N-1
- t=[t1:(Tb/100):t2];
- %correlator
- x1=sum(c1.*qpsk(i,:));
- x2=sum(c2.*qpsk(i,:));
- %decision device
- if (x1>0&&x2>0)
- demod(i)=1;
- demod(i+1)=1;
- elseif (x1>0&&x2<0)
- demod(i)=1;
- demod(i+1)=0;
- elseif (x1<0&&x2<0)
- demod(i)=0;
- demod(i+1)=0;
- elseif (x1<0&&x2>0)
- demod(i)=0;
- demod(i+1)=1;
- end
- t1=t1+(Tb+.01); t2=t2+(Tb+.01);
- end
- subplot(3,2,5);stem(demod);
- title('qpsk demodulated bits');xlabel('n---->');ylabel('b(n)');grid on;
+###################################################################
+Overlap ADD overlapSave
+(i) 
+%Experiment 4(a)
+clc;
+close all;
 
-QPSK BER
+n=0:9;
+N=6;
+x=n+1;
+Lenx= length(x);
+h=[1 0 -1];
+M=length(h);
+M1=M-1;
+L=N-M1;
+hz=[h zeros(1,N-M)]; %Appending N-M Zeros
+nhz=0:length(hz)-1;
+xz=[zeros(1,M1) x zeros(1,N-1)]; %Pre Appending M-1 Zeros
+nxz=0:length(xz)-1;
+K=ceil((Lenx+M1-1)/L);
+y=zeros(K,N);
+for i=0:K-1
+ xi=xz(i*L+1:i*L+N)
+ for j=0:N-1
+ m=0:N-1;
+ n1=mod(j-m,N);
+ hs=hz(n1+1);
+ xh=xi.*hs;
+ y(i+1,j+1)=sum(xh);
+ end
+end
+y=y(:,M:N)'; %DiscaRding First M-1 Samples
+y=[y(:)]'; %Concatenating The Output
+ny=0:length(y)-1;
+subplot(1,3,1);
+stem(nxz,xz,'filled');
+xlabel('n');
+ylabel('x(n)');
+title('x(n)');
+subplot(1,3,2);
+stem(nhz,hz,'filled');
+xlabel('n');
+ylabel('h(n)');
+title('h(n)');
+subplot(1,3,3);
+stem(ny,y,'filled');
+xlabel('n');
+ylabel('y(n)');
+title('y(n)');
+
+
+(ii)
+close all;
 clc;
 
-clear all;
-close all;
-N = 2 * 10^5;
-Eb_N0_dB = 2 : 20;
-sy_hat = zeros(1, N);
-nerr = zeros(1, N);
-%Signal Transmission and Detection
-for i=1:length(Eb_N0_dB)
-si = (2 * (rand(1, N) > 0.5) - 1); %In-Phase Symbol Generation ||
-rand(1, N) > 0.5 -> Gives logical Array of 0s and 1s
-sq = (2 * (rand(1, N) > 0.5) - 1); %Quadrature Symbol Generation
-
-sy = si + 1i*sq; %Adding the two Symbols
-
-s = (1 / sqrt(2)) * sy;
-n = 1 / sqrt(2) * (randn(1, N) + 1i*randn(1, N)); %Random Noise Generation
-
-y = 10 ^ (Eb_N0_dB(i) / 20) * s + n; %Received Signal
-si_ = real(y);
-sq_ = imag(y);
-
-sy_hat(si_ < 0 & sq_ < 0) = -1 + -1 * 1i;
-sy_hat(si_ >= 0 & sq_ > 0) = 1 + 1 * 1i;
-sy_hat(si_ < 0 & sq_ >= 0) = -1 + 1 * 1i;
-sy_hat(si_ >= 0 & sq_ < 0) = 1 + -1 * 1i;
-
-%BER Calculation
-nerr(i) = size(find((sy - sy_hat)), 2); %No. of Errors
+n=0:9;
+N=4;
+x=n+1;
+Lenx=length(x);
+h=[1 0 -1];
+M=length(h);
+M1=M-1;
+L=N+M-1;
+hz=[h zeros(1,L-M)]; %Appending N-M Zeros
+nhz=0:length(hz)-1;
+K=ceil(Lenx/N);
+xx=[x zeros(1,N*K-Lenx)]; %Preappending M-1 Zeros
+nxx=0:length(xx)-1;
+y=zeros(K,N);
+for i=0:K-1
+ xi=xx(i*N+1:N*(i+1));
+ xr=[xi zeros(1,M1)];
+ for j=0:L-1
+ m=0:L-1;
+ n1=mod(j-m,L);
+ hs=hz(n1+1);
+ xh=xr.*hs;
+ y(i+1,j+1)=sum(xh);
+ end
 end
-simu = nerr / N;
-theory = erfc(sqrt(0.5 * (10 .^ (Eb_N0_dB/10)))) - (1/4) * (erfc(sqrt(0.5 *
-(10 .^ (Eb_N0_dB) / 10)))) .^ 2;
-semilogy(Eb_N0_dB, theory, 'b-');
-hold on;
-semilogy(Eb_N0_dB, simu(2:20), 'k+');
-axis([2 14 10^-5 1])
-grid on
-legend('Theory QPSK', 'Simulated QPSK');
-xlabel('SNR(dB)');
-ylabel('BER');
-title('BER for QPSK modulation in AWGN');
+yy=[]; %Adding Last M-1 Samples
+for i=1:K-1;
+ y(i,:)=[y(i,1:N) y(i,N+1:L)+y(i+1,1:M1)];
+end
+yy=[y(1,1:L) y(2,M:L) y(3,M:L-M1)];
+ny=0:length(yy)-1;
+subplot(1,3,1);
+stem(nxx,xx,'filled');
+xlabel('n');
+ylabel('x(n)');
+title('x(n)');
+subplot(1,3,2);
+stem(nhz,hz,'filled');
+xlabel('n');
+ylabel('h(n)');
+title('h(n)');
+subplot(1,3,3);
+stem(ny,yy,'filled');
+xlabel('n');
+ylabel('y(n)');
+title('y(n)');
 
 
-/////////////////////////////////////////////////////////////////////////////
-Shannon Fano
+#####################################################################
+100 point DFT
 clc;
-clear all;
 close all;
-n = input('Number of Symbols:');
-p = zeros(1, n);
-for i=1:n
-fprintf('Give the probability for %dth symbol:', i);
-p(i) = input('');
-end
-[p, I] = sort(p, 'descend');
-codes = getCodes(p, 1);
-Lk_pk = zeros(1, n);
-for i=1:length(codes)
-fprintf('\nCode for %dth Symbol: ', I(i));
 
-fprintf('%g ', codes{i});
-fprintf('\n');
-Lk_pk(i) = length(codes{i}) * p(i);
+n=1:100;
+k=1:100;
+x=cos(0.48*pi*n)+cos(0.52*pi*n); %Input Signal
+xpad=[x(1:10),zeros(1,90)]; %Input Signal With Padded Zeros
+N=100; %N-point DFT
+w=2*pi/N;
+subplot(2,2,1);
+stem(x);
+title('Input Signal');
+subplot(2,2,2);
+stem(abs(x*exp(-1i*(n'*w*k))));
+title('100-Point DFT of Input Signal');
+subplot(2,2,3);
+stem(xpad);
+title('Input Signal with Padded Zeros');
+subplot(2,2,4);
+stem(abs(xpad*exp(-1i*(n'*w*k))));
+title('10-Point DFT of Input Signal');
+
+
+#########################################################################
+Filter Design Transition Width
+clc;
+close all;
+
+Fp=2000; %Fp=2KHz
+Fs=5000; %Fs=5KHz
+Ft=20000; %Ft=20KHz
+wp=(2*pi*Fp)/Ft;
+ws=(2*pi*Fs)/Ft;
+trwidth=ws-wp; %Transition Width
+M=ceil(6.2*pi/trwidth)+2; %Filter Length
+tau=(M-1)/2;
+wc=(wp+ws)/2;
+n=0:M-1;
+hd=(sin(wc*(n-tau)))./(pi*(n-tau));
+hd(tau+1)=0.35;
+whan=hann(M)';
+h=hd.*whan;
+w=0:0.02:pi;
+Hw=freqz(h,1,w);
+MagHw=abs(Hw); %Magnitude Response
+HwdB=20*log10(MagHw/max(MagHw)); %In Decibels
+subplot(2,2,1);
+stem(n,hd,'filled');
+axis([-1 M -0.15 0.5]);
+xlabel('n');
+ylabel('hd(n)');
+title('Ideal Impulse Response');
+subplot(2,2,2);
+stem(n,whan,'filled');
+axis([-1 M -0.1 1.2]);
+xlabel('n');
+ylabel('w(n)');
+title('Hann Window');
+subplot(2,2,3);
+stem(n,h,'filled');
+axis([-1 M -0.15 0.5]);
+xlabel('n');
+ylabel('w(n)');
+title('Practical Impulse Response');
+subplot(2,2,4);
+plot(w/pi,HwdB);
+axis([0 1 -100 10]);
+xlabel('Frequency (in pi units)');
+ylabel('dB');
+title('Magnitude Response');
+
+
+##########################################################################
+Hamming Window
+
+clc;
+close all;
+
+M=21; %Hamming Window Length=21
+tau=(M-1)/2;
+n=0:M-1;
+hd=((cos(pi*(n-tau)))./(n-tau))-((sin(pi*(n-tau)))./(pi*(n-tau).^2));
+hd(tau+1)=0;
+whamm=hamming(M)';
+h=hd.*whamm;
+w=0:0.01:pi;
+Hw=freqz(h,1,w);
+Hrw=exp(-j*(pi/2-10*w)).*Hw;
+subplot(2,2,1);
+stem(n,hd,'filled');
+axis([-1 M -1.2 1.2]);
+xlabel('n');
+ylabel('hd(n)');
+title('Ideal Impulse Response');
+subplot(2,2,2);
+stem(n,whamm,'filled');
+axis([-1 M -0.2 1.2]);
+xlabel('n');
+ylabel('w(n)');
+title('Hamming Window');
+subplot(2,2,3);
+stem(n,h,'filled');
+axis([-1 M -1.2 1.2]);
+xlabel('n');
+ylabel('h(n)');
+title('Practical Impulse Response');
+subplot(2,2,4);
+plot(w,Hrw);
+axis([0 pi 0 pi]);
+xlabel('Frequency');
+ylabel('Amplitude');
+title('Amplitude Response');
+
+
+
+
+#######################################################
+Hanning Window
+clc;
+close all;
+
+M=25; %Hamming Window Length=25
+tau=(M-1)/2;
+n=0:M-1;
+hd=(2./(pi*(n-tau))).*(sin(pi*(n-tau)/2).^2);
+hd(tau+1)=0;
+whamm=hamming(M)';
+h=hd.*whamm;
+w=-pi:0.01:pi;
+Hw=freqz(h,1,w);
+Hrw=exp(-j*(pi/2-12*w)).*Hw;
+subplot(2,2,1);
+stem(n,hd,'filled');
+axis([-1 M -0.8 1]);
+xlabel('n');
+ylabel('hd(n)');
+title('Ideal Impulse Response');
+subplot(2,2,2);
+stem(n,whamm,'filled');
+axis([-1 M -0.2 1.2]);
+xlabel('n');
+ylabel('w(n)');
+title('Hamming Window');
+subplot(2,2,3);
+stem(n,h,'filled');
+axis([-1 M -0.8 1]);
+xlabel('n');
+ylabel('h(n)');
+title('Practical Impulse Response');
+subplot(2,2,4);
+plot(w/pi,Hrw);
+axis([-1 1 -1.2 1.2]);
+xlabel('Frequency in pi Units');
+ylabel('Amplitude');
+title('Amplitude Response');
+
+
+
+######################################################
+Butterworth
+clc;
+close all;
+ 
+T=1;
+wp=0.3*pi; 
+ws=0.8*pi;
+Ap=1;
+As=40;
+ 
+Wp= (2 /T) *tan (wp/ 2) ; %analog pass band edge freq
+Ws= (2/T) *tan (ws / 2 ) ; %analog stop band edge freq
+R=(10^(0.1*Ap) -1) / (10^(0.1*As)-1) ; 
+ 
+N=ceil ( (1/2)* (log10 (R) / (log10 (Wp/Ws))))
+Wc=Wp/((10^(0.1*Ap) -1)^(1/ (2*N)));
+[b,a] = butter (N, Wc , 'low' , 's' ) ;
+ 
+Hs=tf (b,a)
+[numd, dend]= bilinear(b, a, 1/T) ;
+Hz=tf (numd , dend, T)
+w=0:0.01:pi;
+ 
+Hw=freqz (numd, dend, w) ;
+subplot (121) ;
+plot (w, abs (Hw)) ;
+xlabel ('frequency') ;
+ylabel ('magnitude');
+subplot (122) ;
+plot (w, 20*log10 (abs (Hw))) ;
+xlabel('frequency'); 
+ylabel('Magnitude (dB)');
+
+
+
+#############################################################################
+truncation
+clc; 
+clear all;
+ 
+x=3/8;
+B=2;
+xl=abs(x);
+Qx=0;
+for k=1:13
+    Qxbeq(k)=fix(xl*2);
+    Qx=fix(xl*2)/(2^k)+Qx;
+    x1=(xl*2)-fix(xl*2);
 end
-avg_L = sum(Lk_pk);
-Entropy = 0;
-for i=1:n
-Entropy = Entropy + (-1 * p(i) * log2(p(i)));
-end
-fprintf('\nEntropy: %f\n', Entropy);
-efficiency = (Entropy / avg_L) * 100;
-fprintf('\nEfficiency: %f\n', efficiency);
-function codes=getCodes(p, tp)
-if (length(p) == 1 || length(p) == 2)
-if (length(p) == 2)
-codes = {[0]; [1]};
+sg=sign(x); 
+if sg>0
+    Qxbeq =[0 Qxbeq];
 else
-codes = {[]};
+    Qxbeq =[1 Qxbeq];
 end
+ 
+disp('Truncated Number:')
+disp(Qx);
+disp('Binary equivalent of truncated number:')
+disp (Qxbeq)
+ 
+
+2.
+clc; 
+clear all;
+ 
+x=3/8;
+B=2;
+x1= abs(x);
+Qx=0;
+x1= x1 +(1/2)*2^(-B);
+ 
+for k=1:B
+    Qxbeq(k)=fix(x1*2);
+    Qx= fix(x1*2)/(2^k) +Qx;
+    x1=(x1*2)-fix(x1*2);
+end
+sg=sign(x);
+if sg>0
+    Qxbeq =[0 Qxbeq];
 else
-sum = 0;
-prevSum = 0;
-codes = cell(length(p), 1);
-index = -1;
-mid = tp/2;
-first = 1;
-for i=1:length(p)
-prevSum = sum;
+    Qxbeq =[1 Qxbeq];
+end
+disp('Rounded Humber:')
+disp(Qx)
+disp('Binary equivalent of rounded number:')
+disp(Qxbeq)
 
-sum = sum + p(i);
-if (sum <= tp / 2)
-codes{i} = [0];
-else
-if (abs(tp/2 - sum) <= abs(tp/2 - prevSum))
-codes{i} = [0];
-else
-if (first)
-index = i;
-first = 0;
-mid = prevSum;
-end
-codes{i} = [1];
-end
-end
-end
 
-%Recursively Getting the codes
-codesUp = getCodes(p(1:index - 1), mid);
-codesDown = getCodes(p(index:length(p)), tp - mid);
 
-%Concatenating
-i = 1;
-j = 1;
-while(j <= length(codesUp))
-codes{i} = [codes{i}, codesUp{j}];
-i = i + 1;
-j = j + 1;
+##############################################################################
+clc;
+close all;
+ 
+a=-1/2;
+B=4;
+x=[7/8 zeros(1,20)];
+ 
+ycap=0;
+ 
+for n=1:21
+    ay=abs(a*ycap); 
+    ay=ay+(1/2)*2^(-B);
+    Qy=0;
+    for k=1:B 
+        Qy=fix(ay*2)/(2^k)+Qy; 
+        ay=(ay*2)-fix(ay*2); 
+    end
+    Qy = sign(a*ycap)* Qy;
+    y(n)=Qy+x(n);
+    ycap=y(n);
+end
+k=0:20; 
+stem(k,y,'filled') 
+ylabel('Amplitude'); 
+xlabel('Time index n')
 
-end
-j = 1;
-while (j <= length(codesDown))
-codes{i} = [codes{i}, codesDown{j}];
-i = i + 1;
-j = j + 1;
-end
-end
-end
+
